@@ -1,0 +1,17 @@
+application: dd6cda073ecf
+version: 100
+runtime: python
+api_version: 1
+
+builtins:
+- datastore_admin: on
+- appstats: on
+
+handlers:
+- url: /remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  login: admin
+- url: /static
+  static_dir: static
+- url: /.*
+  script: uploader.py
