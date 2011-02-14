@@ -24,17 +24,38 @@ class TestImageUploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         self.response.out.write(blobstore.create_upload_url('/image/submit'))
 
     def post(self):
-        upload_files = self.get_uploads('image')
-        if len(upload_files) > 0:
-            name = self.request.get("name")
-            blob_info = upload_files[0]
-            image = TestImage(name=name, blob_key=blob_info.key())
-            image.put()
-            logging.info("Uploaded image named %s" % name)
-            self.redirect("/image/%s.png" % name)
+        name = self.request.get("name")
+        blob_info = self.get_uploads()[0]
+        image = TestImage(name=name, blob_key=blob_info.key())
+        image.put()
+        logging.info("Uploaded image named %s" % name)
+        logging.info("Uploaded data %s" % self.request.__dict__)
+        self.redirect("/image/%s.png" % name)
+
+
+
+class TestOneStepImageUploadHandler(webapp.RequestHandler):
+
+    def post(self):    
+        
+        name = self.request.get("name")
+        img = request.get("image")
+        
+        image = TestImage(name=name, blob_key=blob_info.key())
+        image.put()
+
+
+
+        img.put()
+        if (self.request.get("return")):
+            # this was submitted by a form
+            self.redirect(self.request.get("return"))
         else:
-            logging.info("No files were uploaded")
-            self.redirect("/static/broken.png")
+            # this was submitted by an API client
+
+            response = { 'handle': img.handle, 'created_at': img.created_at.isoformat() }
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(simplejson.dumps(response))
 
 class TestImageServer(webapp.RequestHandler):
 
